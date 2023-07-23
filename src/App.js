@@ -5,29 +5,9 @@ import { saveAs } from 'file-saver';
 
 import './styles.css';
 
-var diff, oriImgHeight
-/*
-// 函式用於調整輸入圖片的大小至指定尺寸
-const resizeImage = async (file, width, height) => {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.src = URL.createObjectURL(file);
+var diff = 261
 
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(image, 0, 0, width, height);
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, 'image/jpeg');
-    };
-  });
-};
-*/
 const processImageA = async (file) => {
-  // const file = await resizeImage(oriFile, 1366, 768); // 調整大小為 1366x768
   const image = new Image();
   image.src = URL.createObjectURL(file);
 
@@ -46,14 +26,6 @@ const processImageA = async (file) => {
       grayscaleCanvas.height = image.height;
       const ctxGrayscale = grayscaleCanvas.getContext('2d');
       ctxGrayscale.drawImage(image, 0, 0);
-
-      // 獲取圖片的寬度和高度
-      const width = image.width;
-      const height = image.height;
-      // window.alert('A: ' + width + ' ' + height);
-
-      diff = width * 261 / 1366;
-      oriImgHeight = height;
 
       // 取得圖片的像素數據
       const imageData = ctxGrayscale.getImageData(0, 0, grayscaleCanvas.width, grayscaleCanvas.height);
@@ -137,7 +109,7 @@ const processImageA = async (file) => {
 
       croppedWidth = diff+5;
       if (croppedHeight > diff * 2) {
-        croppedHeight = oriImgHeight;
+        croppedHeight = image.height;
         minY = 0;
       } else {
         croppedHeight += 11;
@@ -239,8 +211,7 @@ const processImageB = async (file) => {
       let h1 = hSeparationLineYSecondMax;
       let h2 = hSeparationLineYMax - hSeparationLineYSecondMax;
       if (h2 < h1) { h1+=1; h2-=3 } else { h1-=1; h2+=3 }
-      // window.alert(oriImgHeight*600/768 + ' ' + Math.abs(h2) + ' ' + image.height)
-      if (Math.abs(h2) < 10 || (oriImgHeight*600/768 < Math.abs(h2) && Math.abs(h2) < oriImgHeight*625/768)) { h1 = 0; h2 = image.height }
+      if (Math.abs(h2) < 10 || (600 < Math.abs(h2) && Math.abs(h2) < 625)) { h1 = 0; h2 = image.height }
 
       // 初始化最大和第二大顏色差異及其對應的分隔線位置
       let wMaxColorDiff = 0;
@@ -314,6 +285,9 @@ const App = () => {
 
 
   const handleImageDrop = (acceptedFiles) => {
+    setResultA(null)
+    setResultB(null)
+    setIsProcessed(false)
     setImages([...images, ...acceptedFiles]);
   };
 
@@ -362,8 +336,8 @@ const App = () => {
       const zip = new JSZip();
 
       for (let i = 0; i < resultA.length; i++) {
-        zip.file(`ProcessedA-${i + 1}.jpg`, resultA[i]);
-        zip.file(`ProcessedB-${i + 1}.jpg`, resultB[i]);
+        // zip.file(`dark_${i + 1}.jpg`, resultA[i]);
+        zip.file(`clip_${i + 1}.jpg`, resultB[i]);
       }
 
       zip.generateAsync({ type: 'blob' }).then((content) => {
@@ -394,7 +368,7 @@ const App = () => {
         )*/}
         {/*activePage === 'imageProcessing' && */(
           <div>
-            <h2>裝備裁剪</h2>
+            <h2>裝備</h2>
             <Dropzone onDrop={handleImageDrop} accept="image/*" multiple>
               {({ getRootProps, getInputProps }) => (
                 <div {...getRootProps()} className="dropzone">
@@ -403,7 +377,7 @@ const App = () => {
                 </div>
               )}
             </Dropzone>
-            <button onClick={handleProcessImages}>處理圖片</button>
+            <button onClick={handleProcessImages}>執行</button>
             {isProcessed && (
               <div>
                 <button onClick={handleDownload}>下載處理後的圖片</button>
