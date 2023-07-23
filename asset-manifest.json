@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/msClip/static/css/main.722fd13c.css",
+    "main.js": "/msClip/static/js/main.ef404e68.js",
+    "index.html": "/msClip/index.html",
+    "main.722fd13c.css.map": "/msClip/static/css/main.722fd13c.css.map",
+    "main.ef404e68.js.map": "/msClip/static/js/main.ef404e68.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.722fd13c.css",
+    "static/js/main.ef404e68.js"
+  ]
+}
