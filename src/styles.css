@@ -1,25 +1,17 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #1f1f1f;
-  color: #fff;
-}
-
 .App {
   text-align: center;
-  padding: 20px;
 }
 
 .page {
   background-color: #333;
   padding: 20px;
   border-radius: 10px;
-  margin-top: 20px;
+  margin: 3% 20.2%;
 }
 
 h1 {
-  margin: 0px;
+  margin-top: 10px;
+  color: #ddd;
 }
 
 h2 {

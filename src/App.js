@@ -9,7 +9,12 @@ var diff = 261
 
 const processImageA = async (file) => {
   const image = new Image();
-  image.src = URL.createObjectURL(file);
+  try {
+    image.src = URL.createObjectURL(file);
+  } catch (error) {
+    window.alert('執行失敗…\n※ 可能含有非遊戲內建的截圖或其他原因')
+    window.location.reload()
+  }
 
   return new Promise((resolve) => {
     // 定義內部函式，用於處理圖片 A
@@ -182,7 +187,12 @@ const processImageA = async (file) => {
 
 const processImageB = async (file) => {
   const image = new Image();
-  image.src = URL.createObjectURL(file);
+  try {
+    image.src = URL.createObjectURL(file);
+  } catch (error) {
+    window.alert('執行失敗…\n※ 可能含有非遊戲內建的截圖或其他原因')
+    window.location.reload()
+  }
 
   return new Promise((resolve) => {
     // 定義內部函式，用於處理圖片 B
@@ -321,6 +331,14 @@ const App = () => {
   const [processing, setProcessing] = useState(false); // 新增處理中的狀態變數
 
   const handleImageDrop = (acceptedFiles) => {
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
+    const invalidFiles = acceptedFiles.filter((file) => !validImageTypes.includes(file.type));
+  
+    if (invalidFiles.length > 0) {
+      window.alert('只能夠上傳圖片檔案，請重新選擇截圖上傳。');
+      return;
+    }
+
     setImages([]);
     setNumFilesUploaded(acceptedFiles.length);
     setOri(null)
@@ -367,6 +385,10 @@ const App = () => {
       setIsProcessed(true);
       setProcessing(false);
     }
+    else {
+      window.alert('請先上傳截圖')
+      window.location.reload()
+    }
   };
 
   useEffect(() => {
@@ -407,8 +429,8 @@ const App = () => {
   */
   return (
     <div className="App">
-      <h1>裝備裁剪</h1>
       <div className="page">
+        <h1>裝備裁剪</h1>
         {/*<button onClick={switchToHelloPage}>首頁</button>
         <button onClick={switchToImageProcessingPage}>裝備裁剪</button>*/}
         {/*activePage === 'hello' && (
@@ -426,10 +448,8 @@ const App = () => {
                 </div>
               )}
             </Dropzone>
-            <button onClick={handleProcessImages}>執行</button>
-            {isProcessed && (
-                <button onClick={handleDownload}>下載已裁剪的圖片</button>
-            )}
+            {!isProcessed && (<button onClick={handleProcessImages}>執行</button>)}
+            {isProcessed && (<button onClick={handleDownload}>下載已裁剪的圖片</button>)}
             {images.length > 0 && <p>已選擇 {numFilesUploaded} 個檔案上傳成功</p>}
             {processing && (<div className="loading-container"><div className="loading-spinner" /></div>)}
             {!processing && images.length === 0 && <p>請使用 MapleStory 內建截圖（明亮背景）</p>}
@@ -437,7 +457,7 @@ const App = () => {
               ori.map((file, index) => (
                 <div className="image-wrapper" key={index}>
                   <div className="image-container" style={{ width: "50%" }}>
-                    <h3>圖 {index + 1}：{file.name}</h3>
+                    <p>圖 {index + 1}：{file.name}</p>
                     <img src={URL.createObjectURL(file)} alt={`Processed B ${index + 1}`} />
                   </div>
                   <div className="image-container">
@@ -448,6 +468,60 @@ const App = () => {
           </div>
         )}
       </div>
+      <ScrollToTopButton></ScrollToTopButton>
+    </div>
+  );
+};
+
+const ScrollToTopButton = () => {
+  const [showButton, setShowButton] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowButton(true);
+      } else {
+        setShowButton(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  const buttonStyles = {
+    position: 'fixed',
+    bottom: '20px',
+    right: '20px',
+    borderRadius: '50%',
+    background: '#222',
+    color: '#fff',
+    width: '50px',
+    height: '50px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    cursor: 'pointer',
+    opacity: showButton ? '1' : '0',
+    transition: 'opacity 0.3s ease-in-out'
+  };
+
+  return (
+    <div
+      style={buttonStyles}
+      onClick={scrollToTop}
+    >
+      <span>TOP</span>
     </div>
   );
 };
