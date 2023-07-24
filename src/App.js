@@ -41,7 +41,7 @@ const processImageA = async (file) => {
       ctxGrayscale.putImageData(imageData, 0, 0);
 
       // 影像處理：找到且保留像素面積大於的過深黑色區域的座標
-      const darkAreaCoordinates = [];
+      var darkAreaCoordinates = [];
       const visited = new Set();
       const directions = [
         [1, 0],
@@ -80,6 +80,10 @@ const processImageA = async (file) => {
         return currentArea;
       };
 
+      let largestArea = [];
+      let secondLargestArea = [];
+      let foundOneArea = false;
+
       for (let y = 0; y < colorCanvas.height; y++) {
         for (let x = 0; x < colorCanvas.width; x++) {
           const index = (y * colorCanvas.width + x) * 4;
@@ -89,10 +93,33 @@ const processImageA = async (file) => {
             const currentArea = processDarkArea(x, y);
 
             if (currentArea.length > 4500) {
-              darkAreaCoordinates.push(...currentArea);
+              if (!foundOneArea) {
+                // 如果還沒找到區域，將當前區域設為最大區域
+                largestArea = currentArea;
+                foundOneArea = true;
+              } else if (currentArea.length > largestArea.length) {
+                // 如果已經找到區域，但當前區域比最大區域還大，則將最大區域設為當前區域，
+                // 同時將之前找到的第二大區域更新為最大區域
+                secondLargestArea = largestArea;
+                largestArea = currentArea;
+              } else if (currentArea.length > secondLargestArea.length) {
+                // 如果已經找到區域，且當前區域不如最大區域大但比第二大區域大，則將當前區域設為第二大區域
+                secondLargestArea = currentArea;
+              }
             }
+
+            // 標記已訪問的像素點
+            currentArea.forEach(coord => visited.add(coord.index));
           }
         }
+      }
+
+      if (secondLargestArea.length > 0 && secondLargestArea.length*5 > largestArea.length) {
+        // 如果找到兩個區域，則選擇x值較小的那個區域作為最終結果
+        darkAreaCoordinates = (largestArea[0].x < secondLargestArea[0].x) ? largestArea : secondLargestArea;
+      } else {
+        // 如果只找到一個區域，則該區域為最終結果
+        darkAreaCoordinates = largestArea;
       }
 
       // 影像處理：根據保留的座標進行剪裁
@@ -338,6 +365,9 @@ const App = () => {
   useEffect(() => {
     // 組件卸載時釋放 URL
     return () => {
+      if (ori) {
+        ori.forEach((url) => URL.revokeObjectURL(url));
+      }
       if (resultA) {
         resultA.forEach((url) => URL.revokeObjectURL(url));
       }
@@ -345,10 +375,10 @@ const App = () => {
         resultB.forEach((blob) => URL.revokeObjectURL(URL.createObjectURL(blob)));
       }
     };
-  }, [resultA, resultB]);
+  }, [ori, resultA, resultB]);
 
   const handleDownload = () => {
-    if (isProcessed && resultA && resultB) {
+    if (isProcessed && resultB) {
       const zip = new JSZip();
 
       for (let i = 0; i < ori.length; i++)
@@ -359,7 +389,7 @@ const App = () => {
       });
     }
   };
-/*
+  /*
   const switchToHelloPage = () => {
     setActivePage('hello');
   };
@@ -367,7 +397,7 @@ const App = () => {
   const switchToImageProcessingPage = () => {
     setActivePage('imageProcessing');
   };
-*/
+  */
   return (
     <div className="App">
       <h1>裝備裁剪</h1>
@@ -395,7 +425,7 @@ const App = () => {
             )}
             {images.length > 0 && <p>已選擇 {numFilesUploaded} 個檔案上傳成功</p>}
             {processing && (<div className="loading-container"><div className="loading-spinner" /></div>)}
-            {!processing && images.length === 0 && <p>請使用 MapleStory 內建截圖（背景不得過暗）</p>}
+            {!processing && images.length === 0 && <p>請使用 MapleStory 內建截圖（明亮背景）</p>}
             {resultB &&
               ori.map((file, index) => (
                 <div className="image-wrapper" key={index}>
