@@ -93,7 +93,6 @@ const processImageA = async (file) => {
             const currentArea = processDarkArea(x, y);
 
             if (currentArea.length > 4500) {
-              window.alert(currentArea.length)
               if (!foundOneArea) {
                 // 如果還沒找到區域，將當前區域設為最大區域
                 largestArea = currentArea;
