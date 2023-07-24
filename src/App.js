@@ -93,6 +93,7 @@ const processImageA = async (file) => {
             const currentArea = processDarkArea(x, y);
 
             if (currentArea.length > 4500) {
+              window.alert(currentArea.length)
               if (!foundOneArea) {
                 // 如果還沒找到區域，將當前區域設為最大區域
                 largestArea = currentArea;
@@ -114,13 +115,10 @@ const processImageA = async (file) => {
         }
       }
 
-      if (secondLargestArea.length > 0 && secondLargestArea.length*5 > largestArea.length) {
-        // 如果找到兩個區域，則選擇x值較小的那個區域作為最終結果
+      if (secondLargestArea.length > 0 && secondLargestArea.length*3 > largestArea.length)
+        // 如果找到兩個區域且面積沒差很多，則選擇x值較小的那個區域作為最終結果
         darkAreaCoordinates = (largestArea[0].x < secondLargestArea[0].x) ? largestArea : secondLargestArea;
-      } else {
-        // 如果只找到一個區域，則該區域為最終結果
-        darkAreaCoordinates = largestArea;
-      }
+      else darkAreaCoordinates = largestArea; // 如果只找到一個區域，則該區域為最終結果
 
       // 影像處理：根據保留的座標進行剪裁
       const croppedCanvas = document.createElement('canvas');
