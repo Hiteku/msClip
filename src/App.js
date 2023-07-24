@@ -456,7 +456,7 @@ const App = () => {
             {resultB &&
               ori.map((file, index) => (
                 <div className="image-wrapper" key={index}>
-                  <div className="image-container" style={{ width: "50%" }}>
+                  <div className="image-container hide-on-screens" style={{ width: "50%" }}>
                     <p>圖 {index + 1}：{file.name}</p>
                     <img src={URL.createObjectURL(file)} alt={`Processed B ${index + 1}`} />
                   </div>
