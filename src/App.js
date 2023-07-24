@@ -284,6 +284,7 @@ const App = () => {
   const [resultB, setResultB] = useState(null);
   const [isProcessed, setIsProcessed] = useState(false); // 新增 isProcessed 狀態
   const [numFilesUploaded, setNumFilesUploaded] = useState(0); // 新增狀態變數來追蹤已上傳的檔案數量
+  const [processing, setProcessing] = useState(false); // 新增處理中的狀態變數
 
   const handleImageDrop = (acceptedFiles) => {
     setImages([]);
@@ -304,6 +305,8 @@ const App = () => {
 
   const handleProcessImages = async () => {
     setImages([]); // 清空 images 狀態
+    setIsProcessed(false);
+    setProcessing(true);
     if (images.length > 0) {
       setIsProcessed(false);
       const zip = new JSZip();
@@ -328,6 +331,7 @@ const App = () => {
       setResultA(resultUrlsA);
       setResultB(resultBlobsB);
       setIsProcessed(true);
+      setProcessing(false);
     }
   };
 
@@ -390,11 +394,13 @@ const App = () => {
                 <button onClick={handleDownload}>下載已裁剪的圖片</button>
             )}
             {images.length > 0 && <p>已選擇 {numFilesUploaded} 個檔案上傳成功</p>}
+            {processing && (<div className="loading-container"><div className="loading-spinner" /></div>)}
+            {!processing && images.length === 0 && <p>請使用 MapleStory 內建截圖（背景不得過暗）</p>}
             {resultB &&
               ori.map((file, index) => (
                 <div className="image-wrapper" key={index}>
                   <div className="image-container" style={{ width: "50%" }}>
-                    <h3>圖片 {index + 1}：{file.name}</h3>
+                    <h3>圖 {index + 1}：{file.name}</h3>
                     <img src={URL.createObjectURL(file)} alt={`Processed B ${index + 1}`} />
                   </div>
                   <div className="image-container">
