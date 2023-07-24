@@ -279,16 +279,27 @@ const processImageB = async (file) => {
 const App = () => {
   const [images, setImages] = useState([]);
   // const [activePage, setActivePage] = useState('imageProcessing');
+  const [ori, setOri] = useState(null);
   const [resultA, setResultA] = useState(null);
   const [resultB, setResultB] = useState(null);
   const [isProcessed, setIsProcessed] = useState(false); // 新增 isProcessed 狀態
-
+  const [numFilesUploaded, setNumFilesUploaded] = useState(0); // 新增狀態變數來追蹤已上傳的檔案數量
 
   const handleImageDrop = (acceptedFiles) => {
+    setImages([]);
+    setNumFilesUploaded(acceptedFiles.length);
+    setOri(null)
     setResultA(null)
     setResultB(null)
     setIsProcessed(false)
-    setImages([...images, ...acceptedFiles]);
+
+    // 將每個檔案表示為一個物件，包含name和file屬性
+    const updatedImages = acceptedFiles.map((file) => ({
+      name: file.name,
+      file: file,
+    }));
+  
+    setImages([...images, ...updatedImages]);
   };
 
   const handleProcessImages = async () => {
@@ -299,10 +310,10 @@ const App = () => {
 
       const resultUrlsA = [];
       const resultBlobsB = [];
-      const originalImages = [];
+      const oriUrls = [];
 
       for (const image of images) {
-        const imageA = await processImageA(image);
+        const imageA = await processImageA(image.file);
         const imageB = await processImageB(imageA);
 
         // zip.file(`${image.name}-A.jpg`, imageA);
@@ -310,9 +321,10 @@ const App = () => {
 
         resultUrlsA.push(URL.createObjectURL(imageA));
         resultBlobsB.push(imageB);
-        originalImages.push(URL.createObjectURL(image));
+        oriUrls.push(image.file);
       }
 
+      setOri(oriUrls);
       setResultA(resultUrlsA);
       setResultB(resultBlobsB);
       setIsProcessed(true);
@@ -335,10 +347,8 @@ const App = () => {
     if (isProcessed && resultA && resultB) {
       const zip = new JSZip();
 
-      for (let i = 0; i < resultA.length; i++) {
-        // zip.file(`dark_${i + 1}.jpg`, resultA[i]);
-        zip.file(`clip_${i + 1}.jpg`, resultB[i]);
-      }
+      for (let i = 0; i < ori.length; i++)
+        zip.file(`clip_${ori[i].name}`, resultB[i]);
 
       zip.generateAsync({ type: 'blob' }).then((content) => {
         saveAs(content, 'processed_images.zip');
@@ -356,45 +366,40 @@ const App = () => {
 */
   return (
     <div className="App">
-      <h1>裁剪</h1>
+      <h1>裝備裁剪</h1>
       <div className="page">
         {/*<button onClick={switchToHelloPage}>首頁</button>
         <button onClick={switchToImageProcessingPage}>裝備裁剪</button>*/}
         {/*activePage === 'hello' && (
           <div>
-            <h2>首頁</h2>
             <p>Hello World!</p>
           </div>
         )*/}
         {/*activePage === 'imageProcessing' && */(
           <div>
-            <h2>裝備</h2>
             <Dropzone onDrop={handleImageDrop} accept="image/*" multiple>
               {({ getRootProps, getInputProps }) => (
                 <div {...getRootProps()} className="dropzone">
                   <input {...getInputProps()} />
-                  <p>拖曳圖片至此，或點擊選擇圖片上傳</p>
+                  <p>拖曳截圖至此，或點擊選擇截圖上傳。</p>
                 </div>
               )}
             </Dropzone>
             <button onClick={handleProcessImages}>執行</button>
             {isProcessed && (
-              <div>
-                <button onClick={handleDownload}>下載處理後的圖片</button>
-              </div>
+                <button onClick={handleDownload}>下載已裁剪的圖片</button>
             )}
-            {/*resultA &&
-              resultA.map((imageUrl, index) => (
-                <div key={index}>
-                  <h3>圖片 {index + 1} - A</h3>
-                  <img src={imageUrl} alt={`Processed A ${index + 1}`} />
-                </div>
-              ))*/}
+            {images.length > 0 && <p>已選擇 {numFilesUploaded} 個檔案上傳成功</p>}
             {resultB &&
-              resultB.map((promise, index) => (
-                <div key={index}>
-                  <h3>圖片 {index + 1}</h3>
-                  <img src={URL.createObjectURL(promise)} alt={`Processed B ${index + 1}`} />
+              ori.map((file, index) => (
+                <div className="image-wrapper" key={index}>
+                  <div className="image-container" style={{ width: "50%" }}>
+                    <h3>圖片 {index + 1}：{file.name}</h3>
+                    <img src={URL.createObjectURL(file)} alt={`Processed B ${index + 1}`} />
+                  </div>
+                  <div className="image-container">
+                    <img src={URL.createObjectURL(resultB[index])} alt={`Processed B ${index + 1}`} />
+                  </div>
                 </div>
               ))}
           </div>
