@@ -170,7 +170,12 @@ const processImageA = async (file) => {
 
     // 使用 onload 事件來確保圖片載入完成後再進行處理
     image.onload = () => {
-      loadImage();
+      try {
+        loadImage();
+      } catch (error) {
+        window.alert('執行失敗…\n※ 可能含有背景過暗的截圖或其他原因')
+        window.location.reload()
+      }
     };
   });
 };
@@ -295,7 +300,12 @@ const processImageB = async (file) => {
 
     // 使用 onload 事件來確保圖片載入完成後再進行處理
     image.onload = () => {
-      loadImage();
+      try {
+        loadImage();
+      } catch (error) {
+        window.alert('執行失敗…\n※ 可能含有背景過暗的截圖或其他原因')
+        window.location.reload()
+      }
     };
   });
 };
