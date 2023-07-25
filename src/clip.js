@@ -7,6 +7,40 @@ import './styles.css';
 
 var diff = 261
 
+// 加上圓角效果的函式
+const addRoundedCorner = (imageBlob, radius) => {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.src = URL.createObjectURL(imageBlob);
+
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext('2d');
+
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(canvas.width - radius, 0);
+      ctx.arcTo(canvas.width, 0, canvas.width, radius, radius);
+      ctx.lineTo(canvas.width, canvas.height - radius);
+      ctx.arcTo(canvas.width, canvas.height, canvas.width - radius, canvas.height, radius);
+      ctx.lineTo(radius, canvas.height);
+      ctx.arcTo(0, canvas.height, 0, canvas.height - radius, radius);
+      ctx.lineTo(0, radius);
+      ctx.arcTo(0, 0, radius, 0, radius);
+      ctx.closePath();
+      ctx.clip();
+
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, 'image/png');
+    };
+  });
+};
+
 const processImageA = async (file) => {
   const image = new Image();
   try {
@@ -361,7 +395,6 @@ const App = () => {
     setProcessing(true);
     if (images.length > 0) {
       setIsProcessed(false);
-      const zip = new JSZip();
 
       const resultUrlsA = [];
       const resultBlobsB = [];
@@ -370,12 +403,10 @@ const App = () => {
       for (const image of images) {
         const imageA = await processImageA(image.file);
         const imageB = await processImageB(imageA);
-
-        // zip.file(`${image.name}-A.jpg`, imageA);
-        zip.file(`${image.name}_clip.jpg`, imageB);
+        const resultImage = await addRoundedCorner(imageB, 9)
 
         resultUrlsA.push(URL.createObjectURL(imageA));
-        resultBlobsB.push(imageB);
+        resultBlobsB.push(resultImage);
         oriUrls.push(image.file);
       }
 
@@ -411,7 +442,7 @@ const App = () => {
       const zip = new JSZip();
 
       for (let i = 0; i < ori.length; i++)
-        zip.file(`clip_${ori[i].name}`, resultB[i]);
+        zip.file(`clip_${ori[i].name.split('.')[0]}.png`, resultB[i]);
 
       zip.generateAsync({ type: 'blob' }).then((content) => {
         saveAs(content, 'processed_images.zip');
