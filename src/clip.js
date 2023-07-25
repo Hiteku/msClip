@@ -430,7 +430,7 @@ const App = () => {
   return (
     <div className="App">
       <div className="page">
-        <h1>裝備裁剪</h1>
+        <h1>裝備裁剪 <img src="https://hiteku.github.io/img/ms/icon/白金神奇剪刀.png" alt=""/></h1>
         {/*<button onClick={switchToHelloPage}>首頁</button>
         <button onClick={switchToImageProcessingPage}>裝備裁剪</button>*/}
         {/*activePage === 'hello' && (
@@ -449,7 +449,7 @@ const App = () => {
               )}
             </Dropzone>
             {!isProcessed && (<button onClick={handleProcessImages}>執行</button>)}
-            {isProcessed && (<button onClick={handleDownload}>下載已裁剪的圖片</button>)}
+            {isProcessed && (<button onClick={handleDownload}><i className="fa-solid fa-download"></i> 下載已裁剪的圖片</button>)}
             {images.length > 0 && <p>已選擇 {numFilesUploaded} 個檔案上傳成功</p>}
             {processing && (<div className="loading-container"><div className="loading-spinner" /></div>)}
             {!processing && images.length === 0 && <p>請使用 MapleStory 內建截圖（明亮背景）</p>}
@@ -458,10 +458,11 @@ const App = () => {
                 <div className="image-wrapper" key={index}>
                   <div className="image-container hide-on-screens" style={{ width: "50%" }}>
                     <p>圖 {index + 1}：{file.name}</p>
-                    <img src={URL.createObjectURL(file)} alt={`Processed B ${index + 1}`} />
+                    <img src={URL.createObjectURL(file)} alt='' />
                   </div>
+                  <i className="fa-solid fa-angle-right hide-on-screens"></i>
                   <div className="image-container">
-                    <img src={URL.createObjectURL(resultB[index])} alt={`Processed B ${index + 1}`} />
+                    <img src={URL.createObjectURL(resultB[index])} alt='' />
                   </div>
                 </div>
               ))}
@@ -517,11 +518,8 @@ const ScrollToTopButton = () => {
   };
 
   return (
-    <div
-      style={buttonStyles}
-      onClick={scrollToTop}
-    >
-      <span>TOP</span>
+    <div style={buttonStyles} onClick={scrollToTop} >
+      <i className="fa-solid fa-angle-up"></i>
     </div>
   );
 };
