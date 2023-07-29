@@ -171,13 +171,13 @@ const processImageA = async (file) => {
       else minX += 2;
 
       croppedWidth = diff+5;
-      // if (croppedHeight > diff * 2) {
+      if (croppedHeight > diff * 2) {
         croppedHeight = image.height;
         minY = 0;
-      /*} else {
-        croppedHeight += 11;
-        minY -= 9;
-      }*/
+      } else {
+        croppedHeight += 30;
+        minY -= 15;
+      }
 
       croppedCanvas.width = croppedWidth;
       croppedCanvas.height = croppedHeight;
@@ -291,7 +291,7 @@ const processImageB = async (file) => {
       // window.alert(separationLineYValues)
 
       let h1 = minValue < 3 ? 0 : minValue-1
-      let h2 = maxValue - h1 + 1
+      let h2 = maxValue - h1
       // window.alert(h1 + ' ' + h2 + ' ' + maxValue)
 
       if (Math.abs(h2) < 10 || (h1 < 180 && h1 > 175 && maxValue > image.height-5)/* || (h1 < 5 && h2 < 625 && h2 > 605)*/) h1 = 0
