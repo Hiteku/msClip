@@ -171,13 +171,13 @@ const processImageA = async (file) => {
       else minX += 2;
 
       croppedWidth = diff+5;
-      if (croppedHeight > diff * 2) {
+      // if (croppedHeight > diff * 2) {
         croppedHeight = image.height;
         minY = 0;
-      } else {
+      /*} else {
         croppedHeight += 11;
         minY -= 9;
-      }
+      }*/
 
       croppedCanvas.width = croppedWidth;
       croppedCanvas.height = croppedHeight;
@@ -247,11 +247,9 @@ const processImageB = async (file) => {
       const imageData = ctx.getImageData(0, 0, image.width, image.height);
       const data = imageData.data;
 
-      // 初始化最大和第二大顏色差異及其對應的分隔線位置
-      let hMaxColorDiff = 0;
-      let hSecondMaxColorDiff = 0;
-      let hSeparationLineYMax = 0;
-      let hSeparationLineYSecondMax = 0;
+      // 找到最明顯、第二、第三、第四和第五明顯的分隔線
+      let maxColorDiffs = [0, 0, 0, 0, 0];
+      let separationLineYValues = [0, 0, 0, 0, 0];
 
       // 遍歷圖片的每一行像素
       for (let y = 1; y < image.height; y++) {
@@ -268,23 +266,36 @@ const processImageB = async (file) => {
           colorDiff += Math.abs(data[index + 2] - data[prevIndex + 2]);
         }
 
-        // 更新最大和第二大顏色差異及其對應的分隔線位置
-        if (colorDiff > hMaxColorDiff) {
-          hSecondMaxColorDiff = hMaxColorDiff;
-          hSeparationLineYSecondMax = hSeparationLineYMax;
+        // 更新最明顯、第二、第三、第四和第五明顯的顏色差異及其對應的分隔線位置
+        for (let i = 0; i < 5; i++) {
+          if (colorDiff > maxColorDiffs[i]) {
+            maxColorDiffs.splice(i, 0, colorDiff);
+            maxColorDiffs.pop();
 
-          hMaxColorDiff = colorDiff;
-          hSeparationLineYMax = y;
-        } else if (colorDiff > hSecondMaxColorDiff) {
-          hSecondMaxColorDiff = colorDiff;
-          hSeparationLineYSecondMax = y;
+            separationLineYValues.splice(i, 0, y);
+            separationLineYValues.pop();
+
+            break;
+          }
         }
       }
 
-      let h1 = hSeparationLineYSecondMax;
-      let h2 = hSeparationLineYMax - hSeparationLineYSecondMax;
-      if (h2 < h1) { h1+=1; h2-=3 } else { h1-=1; h2+=3 }
-      if (Math.abs(h2) < 10 || (600 < Math.abs(h2) && Math.abs(h2) < 625)) { h1 = 0; h2 = image.height }
+      // 找出陣列中的最小值和最大值
+      let minValue = separationLineYValues[0];
+      let maxValue = separationLineYValues[0];
+      for (let i = 1; i < separationLineYValues.length; i++) {
+        if (separationLineYValues[i] === image.height-10 || Math.abs(minValue - separationLineYValues[i]) < 3) continue; // 忽略經驗條的水平線
+        if (separationLineYValues[i] > maxValue) maxValue = separationLineYValues[i];
+        if (separationLineYValues[i] < minValue) minValue = separationLineYValues[i];
+      }
+      // window.alert(separationLineYValues)
+
+      let h1 = minValue < 3 ? 0 : minValue-1
+      let h2 = maxValue - h1 + 1
+      // window.alert(h1 + ' ' + h2 + ' ' + maxValue)
+
+      if (Math.abs(h2) < 10 || (h1 < 180 && h1 > 175 && maxValue > image.height-5)/* || (h1 < 5 && h2 < 625 && h2 > 605)*/) h1 = 0
+      if (h1 === 0) h2 = image.height
 
       // 初始化最大和第二大顏色差異及其對應的分隔線位置
       let wMaxColorDiff = 0;
